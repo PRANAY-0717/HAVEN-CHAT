@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌸 Bloom Chat
 
-## Getting Started
+Bloom Chat is a production-grade, real-time chatroom with an integrated machine learning toxicity detection system. It features a polished FAANG-level UI/UX, real-time analytics, and AI-driven behavior insights.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Real-time Chat**: Instant message delivery using Supabase Realtime.
+- **AI Moderation**: Every message is analyzed for toxicity before being displayed.
+- **Toxicity Meter**: Visual feedback while typing, showing the probability of your message being flagged.
+- **Analytics Dashboard**: Community-wide statistics on safety and interaction.
+- **AI Insights**: Personalized behavior analysis based on your communication style.
+- **Glassmorphism UI**: Modern, sleek design with smooth Framer Motion animations.
+- **Dark/Light Mode**: Fully responsive theme support.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion, shadcn/ui.
+- **Backend**: Supabase (Auth, Database, Realtime).
+- **ML Layer**: Python (FastAPI), scikit-learn (TF-IDF + Logistic Regression).
+
+## 📦 Project Structure
+
+```text
+bloom-chat/
+├── ml-service/          # Python FastAPI ML Service
+│   ├── models/          # Trained model and vectorizer
+│   ├── train.py         # Training script
+│   └── main.py          # FastAPI server
+├── src/
+│   ├── app/             # Next.js App Router pages
+│   ├── components/      # UI and functional components
+│   ├── hooks/           # Custom React hooks
+│   └── lib/             # Supabase and utility functions
+└── supabase/            # SQL schema and policies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚦 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. ML Service Setup
+```bash
+cd ml-service
+python3 -m pip install -r requirements.txt
+python3 train.py
+python3 main.py
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Frontend Setup
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+### 3. Supabase Setup
+- Create a new project on [Supabase](https://supabase.com).
+- Execute the SQL in `supabase/schema.sql` in the SQL Editor.
+- Update `.env.local` with your credentials.
 
-To learn more about Next.js, take a look at the following resources:
+## 🧪 Demo Mode
+If `NEXT_PUBLIC_SUPABASE_URL` is not provided in `.env.local`, the application will run in **Demo Mode** with a mocked Supabase client, allowing you to explore the UI and ML features instantly.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built for the college project fair with ❤️ and FAANG-level polish.
