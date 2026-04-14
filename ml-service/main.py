@@ -92,19 +92,25 @@ async def get_gemini_prediction(text: str, history: list[str] = []):
     Message to analyze: "{text}"
     """
     try:
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold
         response = gemini_model.generate_content(
             prompt,
             generation_config=genai.GenerationConfig(
                 response_mime_type="application/json"
-            )
+            ),
+            safety_settings={
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            }
         )
         import json
         result = json.loads(response.text)
         return result.get('is_toxic', False), result.get('toxicity_score', 0.0)
     except Exception as e:
-        print(f"Gemini error: {e}")
+        print(f"Gemini error or blocked content: {e}")
         return None, None
-
 
 @app.post("/predict", response_model=Prediction)
 async def predict(message: Message):
@@ -133,10 +139,10 @@ async def predict(message: Message):
         if is_toxic_gemini is not None:
             return Prediction(toxicity_score=score_gemini, is_toxic=is_toxic_gemini, mode_used="gemini")
             
-    # 5. Local Decision (Fallback if no Gemini)
-    # If the score is in the uncertain range (>0.6) and we don't have Gemini to verify it,
-    # we must default to blocking it to keep the chat safe!
-    if needs_gemini and not GEMINI_API_KEY:
+    # 5. Local Decision (Fallback for failed Gemini or no Gemini)
+    if needs_gemini:
+        # If we reached here with needs_gemini=True, Gemini either wasn't configured 
+        # or it crashed (e.g. API down). We MUST default to blocking to stay safe.
         is_toxic_local = True
     else:
         is_toxic_local = prob > 0.85
