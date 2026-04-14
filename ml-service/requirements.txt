@@ -2,6 +2,7 @@ fastapi
 uvicorn
 pandas
 scikit-learn
-pickle-mixin
-python-multipart
 pydantic
+numpy
+google-generativeai
+python-multipart
