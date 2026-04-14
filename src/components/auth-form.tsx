@@ -85,25 +85,7 @@ export function AuthForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
           </Button>
-          <div className="relative w-full">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-          <Button type="button" variant="outline" className="w-full" onClick={handleGoogleLogin}>
-            Google
-          </Button>
-          <Button
-            type="button"
-            variant="link"
-            className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-          </Button>
+
         </CardFooter>
       </form>
     </Card>
