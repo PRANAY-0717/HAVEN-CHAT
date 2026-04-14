@@ -305,20 +305,20 @@ export function ChatRoom({ user }: ChatRoomProps) {
 
       const { toxicity_score, is_toxic } = await res.json();
 
-      let finalContent = newMessage;
       if (is_toxic) {
-        finalContent = '[Message removed by Auto-Moderator]';
-        toast.warning('⚠️ Your message violated community guidelines', {
-          description: 'Keep the conversation respectful.',
-          duration: 5000,
+        toast.error('🚫 Message Blocked', {
+          description: 'Your message was flagged as toxic and could not be sent. Please keep the conversation respectful.',
+          duration: 6000,
         });
+        setLoading(false);
+        return;
       }
 
       // 2. Store in Supabase
       const { error } = await supabase.from('messages').insert({
         user_id: user.id,
-        content: finalContent,
-        is_toxic,
+        content: newMessage,
+        is_toxic: false,
         toxicity_score,
       });
 
@@ -347,8 +347,8 @@ export function ChatRoom({ user }: ChatRoomProps) {
       const optimisticMsg: Message = {
         id: 'optimistic-' + Math.random().toString(), // Use a prefix
         user_id: user.id,
-        content: finalContent,
-        is_toxic,
+        content: newMessage,
+        is_toxic: false,
         toxicity_score,
         created_at: new Date().toISOString(),
         profiles: { 
@@ -563,16 +563,13 @@ export function ChatRoom({ user }: ChatRoomProps) {
                       </div>
                       <div
                         className={`group relative px-4 py-2.5 rounded-2xl shadow-sm text-sm transition-all duration-200 hover:shadow-md ${
-                          msg.is_toxic
-                            ? 'bg-destructive/10 border border-destructive/20 text-destructive italic backdrop-blur-sm'
-                            : msg.user_id === user.id
+                          msg.user_id === user.id
                             ? 'bg-primary text-primary-foreground rounded-tr-none'
                             : 'bg-muted/50 text-foreground border border-white/5 backdrop-blur-sm rounded-tl-none'
                         }`}
                       >
                         {msg.content}
-                        {!msg.is_toxic && (
-                          <div className={`absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground flex items-center gap-2 whitespace-nowrap ${msg.user_id === user.id ? 'right-0' : 'left-0'}`}>
+                        <div className={`absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground flex items-center gap-2 whitespace-nowrap ${msg.user_id === user.id ? 'right-0' : 'left-0'}`}>
                             <span>{msg.id.startsWith('optimistic-') ? 'Sending...' : 'Delivered'}</span>
                             {!msg.id.startsWith('optimistic-') && (
                               <button 
@@ -584,7 +581,6 @@ export function ChatRoom({ user }: ChatRoomProps) {
                               </button>
                             )}
                           </div>
-                        )}
                       </div>
                     </div>
                   </div>
