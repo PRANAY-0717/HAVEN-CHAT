@@ -58,6 +58,15 @@ class Prediction(BaseModel):
 
 async def get_gemini_prediction(text: str):
     prompt = f"""Analyze the following message for toxicity. 
+    Toxicity is defined as content that is: 
+    - Harassing, insulting, or intended to cause emotional harm.
+    - Hate speech targeting identity or protected groups.
+    - Threats of violence or physical harm.
+    - Explicitly sexual or inappropriate for a general chat.
+
+    Common conversational filler words like "ok", "okok", "yes", "hello", "lol", etc., are NOT toxic. 
+    Be conservative: only flag if you are certain the intent is harmful.
+
     Return ONLY a JSON object with two fields: 
     'is_toxic' (boolean) and 'toxicity_score' (float between 0 and 1).
     
