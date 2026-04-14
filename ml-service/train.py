@@ -48,7 +48,13 @@ raw_data = [
     ('holy cow', 0), ('my bad', 0), ('no worries', 0), ('it happens', 0),
     ('you got this', 0), ('keep going', 0), ('stay strong', 0),
     ('that is fine', 0), ('perfect', 0), ('awesome', 0), ('great', 0),
-    ('exactly', 0), ('correct', 0), ('true', 0), ('i agree', 0),
+    ('Exactly', 0), ('correct', 0), ('true', 0), ('i agree', 0),
+    ('There are many people here.', 0),
+    ('I love meeting new people.', 0),
+    ('People are amazing.', 0),
+    ('How many people are coming?', 0),
+    ('People usually like that.', 0),
+    ('He is a good person.', 0),
 
     # --- TOXIC / HARMFUL (Label 1) ---
     ('I hate you so much, you are terrible.', 1),
