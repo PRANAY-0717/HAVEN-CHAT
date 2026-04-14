@@ -111,7 +111,15 @@ raw_data = [
     ('Piece of sh*t.', 1), ('Motherf***er.', 1), ('You are trash.', 1),
     # Additional explicit profanities to ensure model catches them
     ('shit', 1), ('you are shit', 1), ('shit hehe', 1), ('shiuty', 1),
-    ('fuck', 1), ('bitch', 1), ('asshole', 1), ('crap', 1), ('bullshit', 1)
+    ('fuck', 1), ('bitch', 1), ('asshole', 1), ('crap', 1), ('bullshit', 1),
+    ('fuck off', 1),
+
+    # Multilingual / Hinglish Profanities
+    ('chutiya', 1), ('tu pagal', 1), ('paggal', 1), ('madarchod', 1), ('bhosdike', 1),
+    ('gandu', 1), ('bhenchod', 1), ('kaminey', 1), ('saale', 1),
+    
+    # Specific isolated phrases
+    ('die please', 1), ('you may die', 1)
 ]
 
 df = pd.DataFrame(raw_data, columns=['text', 'is_toxic'])

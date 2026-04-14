@@ -130,7 +130,7 @@ async def predict(message: Message):
     needs_gemini = False
     if message.mode == "high_accuracy":
         needs_gemini = True
-    elif 0.6 <= prob <= 0.85:
+    elif 0.45 <= prob <= 0.85:
         needs_gemini = True
 
     # 4. Gemini Fallback
