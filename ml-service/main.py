@@ -132,9 +132,15 @@ async def predict(message: Message):
         is_toxic_gemini, score_gemini = await get_gemini_prediction(message.text, message.history)
         if is_toxic_gemini is not None:
             return Prediction(toxicity_score=score_gemini, is_toxic=is_toxic_gemini, mode_used="gemini")
-    
-    # 5. Local Decision
-    is_toxic_local = prob > 0.85
+            
+    # 5. Local Decision (Fallback if no Gemini)
+    # If the score is in the uncertain range (>0.6) and we don't have Gemini to verify it,
+    # we must default to blocking it to keep the chat safe!
+    if needs_gemini and not GEMINI_API_KEY:
+        is_toxic_local = True
+    else:
+        is_toxic_local = prob > 0.85
+        
     return Prediction(toxicity_score=prob, is_toxic=is_toxic_local, mode_used="local")
 
 @app.get("/")
