@@ -5,7 +5,7 @@ from sklearn.linear_model import LogisticRegression
 import pickle
 import os
 
-# Updated training data to handle false positives like 'okok'
+# Refined dataset with insights from research on subtle toxicity and common chat patterns
 raw_data = [
     # --- NON-TOXIC (Label 0) ---
     ('I love this project, it is amazing!', 0),
@@ -37,38 +37,20 @@ raw_data = [
     ('That is a very interesting point.', 0),
     ('I would like to learn more about this.', 0),
     ('Let us work together on this.', 0),
-    ('ok', 0),
-    ('okok', 0),
-    ('yes', 0),
-    ('no', 0),
-    ('hello', 0),
-    ('hi', 0),
-    ('hey', 0),
-    ('lol', 0),
-    ('wow', 0),
-    ('good', 0),
-    ('nice', 0),
-    ('cool', 0),
-    ('see you', 0),
-    ('bye', 0),
-    ('thanks', 0),
-    ('thank you', 0),
-    ('ok thanks', 0),
-    ('yes please', 0),
-    ('no thanks', 0),
-    ('just ok', 0),
-    ('it is ok', 0),
-    ('ok let us go', 0),
-    ('ok fine', 0),
-    ('okok got it', 0),
-    ('ok wait', 0),
-    ('how are you', 0),
-    ('what is up', 0),
-    ('nothing much', 0),
-    ('all good', 0),
-    ('not bad', 0),
+    ('ok', 0), ('okok', 0), ('yes', 0), ('no', 0), ('hello', 0), ('hi', 0), ('hey', 0),
+    ('lol', 0), ('wow', 0), ('good', 0), ('nice', 0), ('cool', 0),
+    ('see you', 0), ('bye', 0), ('thanks', 0), ('thank you', 0),
+    ('ok thanks', 0), ('yes please', 0), ('no thanks', 0),
+    ('just ok', 0), ('it is ok', 0), ('ok let us go', 0),
+    ('ok fine', 0), ('okok got it', 0), ('ok wait', 0),
+    ('how are you', 0), ('what is up', 0), ('nothing much', 0),
+    ('all good', 0), ('not bad', 0), ('f**k yeah', 0), ('this is sick', 0),
+    ('holy cow', 0), ('my bad', 0), ('no worries', 0), ('it happens', 0),
+    ('you got this', 0), ('keep going', 0), ('stay strong', 0),
+    ('that is fine', 0), ('perfect', 0), ('awesome', 0), ('great', 0),
+    ('exactly', 0), ('correct', 0), ('true', 0), ('i agree', 0),
 
-    # --- TOXIC (Label 1) ---
+    # --- TOXIC / HARMFUL (Label 1) ---
     ('I hate you so much, you are terrible.', 1),
     ('Go away, nobody likes you.', 1),
     ('You are an idiot and a loser.', 1),
@@ -93,28 +75,37 @@ raw_data = [
     ('I hate everything about you.', 1),
     ('You make me sick.', 1),
     ('You are the worst person I have ever met.', 1),
-    ('Oh great, another brilliant idea from you.', 1),
-    ('You must be so proud of your failure.', 1),
-    ('I love how you think you know everything.', 1),
-    ('Wow, you are so smart (not).', 1),
+    
+    # Subtle Toxicity / Gaslighting / Microaggressions (Label 1)
+    ('You are overreacting, it is not a big deal.', 1),
+    ('If you really cared, you would do this.', 1),
+    ('Everyone thinks you are wrong.', 1),
+    ('I am just being honest, if you do not like it, that is your problem.', 1),
+    ('You are so well-spoken for someone like you.', 1),
+    ('You do not look like a normal person.', 1),
+    ('Why are you being so sensitive?', 1),
+    ('I was just joking, stop being a baby.', 1),
+    ('You are lucky I even talk to you.', 1),
+    ('You are a credit to your people.', 1),
+    ('You are so brave for wearing that.', 1),
     ('Maybe try using your brain for once?', 1),
     ('Your ignorance is truly impressive.', 1),
-    ('Bitch please.', 1),
-    ('You are a total asshole.', 1),
-    ('What a dumbass.', 1),
-    ('Stop being such a prick.', 1),
-    ('You are a coward and a liar.', 1),
-    ('Don\'t be such a jerk.', 1),
-    ('You are acting like a fool.', 1)
+    
+    # Slurs and Strong Language
+    ('Bitch please.', 1), ('You are a total asshole.', 1), ('What a dumbass.', 1),
+    ('Stop being such a prick.', 1), ('You are a coward and a liar.', 1),
+    ('Don\'t be such a jerk.', 1), ('You are acting like a fool.', 1),
+    ('Piece of sh*t.', 1), ('Motherf***er.', 1), ('You are trash.', 1)
 ]
 
 df = pd.DataFrame(raw_data, columns=['text', 'is_toxic'])
 
 def train_model():
-    print(f"Training model with {len(df)} examples...")
+    print(f"Training refined model with {len(df)} examples...")
     X = df['text']
     y = df['is_toxic']
 
+    # Vectorization with character n-grams for typo resilience
     tfidf = TfidfVectorizer(
         stop_words='english', 
         lowercase=True, 
@@ -126,7 +117,7 @@ def train_model():
 
     model = LogisticRegression(
         class_weight='balanced', 
-        C=0.5, 
+        C=0.8, # Slightly higher C for more confidence on this specific dataset
         solver='liblinear',
         max_iter=1000
     )
@@ -139,7 +130,7 @@ def train_model():
     with open('models/vectorizer.pkl', 'wb') as f:
         pickle.dump(tfidf, f)
     
-    print("Model and vectorizer saved to models/ folder.")
+    print("Refined model and vectorizer saved to models/ folder.")
 
 if __name__ == "__main__":
     train_model()

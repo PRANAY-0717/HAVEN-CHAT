@@ -57,20 +57,39 @@ class Prediction(BaseModel):
     mode_used: str
 
 async def get_gemini_prediction(text: str):
-    prompt = f"""Analyze the following message for toxicity. 
-    Toxicity is defined as content that is: 
-    - Harassing, insulting, or intended to cause emotional harm.
-    - Hate speech targeting identity or protected groups.
-    - Threats of violence or physical harm.
-    - Explicitly sexual or inappropriate for a general chat.
+    prompt = f"""You are a high-precision toxicity detection AI for a safe community chat called "Haven".
+    Your task is to analyze the following message and determine if it is toxic.
 
-    Common conversational filler words like "ok", "okok", "yes", "hello", "lol", etc., are NOT toxic. 
-    Be conservative: only flag if you are certain the intent is harmful.
+    DEFINITION OF TOXICITY:
+    - Harassment, insults, or intent to cause emotional harm.
+    - Hate speech (targeting race, religion, gender, etc.).
+    - Threats of violence or self-harm.
+    - Subtle manipulation, gaslighting, or microaggressions.
+    - Explicit sexual content.
 
-    Return ONLY a JSON object with two fields: 
-    'is_toxic' (boolean) and 'toxicity_score' (float between 0 and 1).
-    
-    Message: "{text}"
+    NON-TOXIC EXAMPLES (Do NOT flag these):
+    - "okok", "ok", "yes", "hello", "lol", "wow" (Conversational fillers)
+    - "this is sick!", "f**k yeah!" (Slang used for excitement/positivity)
+    - "i disagree with you" (Respectful disagreement)
+    - "my bad", "no worries" (Polite conversation)
+
+    SUBTLE TOXIC EXAMPLES (Flag these):
+    - "You are overreacting, it's not a big deal." (Gaslighting)
+    - "You're so well-spoken for someone like you." (Microaggression)
+    - "Maybe try using your brain for once?" (Insult)
+
+    INSTRUCTIONS:
+    - Be conservative with false positives.
+    - If the intent is clearly positive or neutral slang, set is_toxic to false.
+    - Return ONLY a JSON object.
+
+    Message to analyze: "{text}"
+
+    JSON Output:
+    {{
+      "is_toxic": boolean,
+      "toxicity_score": float (0.0 to 1.0)
+    }}
     """
     try:
         response = gemini_model.generate_content(prompt)
