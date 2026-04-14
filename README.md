@@ -1,37 +1,41 @@
-# 🌸 Bloom Chat
+# 🛡️ Haven
 
-Bloom Chat is a production-grade, real-time chatroom with an integrated machine learning toxicity detection system. It features a polished FAANG-level UI/UX, real-time analytics, and AI-driven behavior insights.
+**Haven**: A place of safety or refuge from the rest of the toxic internet.
+
+Haven is a production-grade, real-time chatroom with an integrated machine learning toxicity detection system. It features a polished FAANG-level UI/UX, real-time analytics, and AI-driven behavior insights, all within a safe, moderated environment.
 
 ## 🚀 Features
 
 - **Real-time Chat**: Instant message delivery using Supabase Realtime.
-- **AI Moderation**: Every message is analyzed for toxicity before being displayed.
+- **AI Moderation**: Dual-mode toxicity detection (Local Logistic Regression or Google Gemini 1.5 Flash).
+- **Safe Haven Cleanup**: Chatroom is automatically cleaned every 20 minutes to keep the conversation fresh.
+- **Message Collections**: Save important messages to your personal collection to protect them from the auto-cleanup.
 - **Toxicity Meter**: Visual feedback while typing, showing the probability of your message being flagged.
 - **Analytics Dashboard**: Community-wide statistics on safety and interaction.
 - **AI Insights**: Personalized behavior analysis based on your communication style.
-- **Glassmorphism UI**: Modern, sleek design with smooth Framer Motion animations.
+- **Animated Background**: Dynamic, floating glassmorphism elements with a technical grid overlay.
 - **Dark/Light Mode**: Fully responsive theme support.
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion, shadcn/ui.
 - **Backend**: Supabase (Auth, Database, Realtime).
-- **ML Layer**: Python (FastAPI), scikit-learn (TF-IDF + Logistic Regression).
+- **ML Layer**: Python (FastAPI), scikit-learn (TF-IDF + Logistic Regression), Google Gemini API.
 
 ## 📦 Project Structure
 
 ```text
-bloom-chat/
+haven-chat/
 ├── ml-service/          # Python FastAPI ML Service
 │   ├── models/          # Trained model and vectorizer
-│   ├── train.py         # Training script
-│   └── main.py          # FastAPI server
+│   ├── train.py         # Training script (improved with tri-grams)
+│   └── main.py          # FastAPI server with robust error handling
 ├── src/
 │   ├── app/             # Next.js App Router pages
 │   ├── components/      # UI and functional components
 │   ├── hooks/           # Custom React hooks
 │   └── lib/             # Supabase and utility functions
-└── supabase/            # SQL schema and policies
+└── supabase/            # SQL schema (idempotent) and policies
 ```
 
 ## 🚦 Getting Started
@@ -53,10 +57,7 @@ npm run dev
 ### 3. Supabase Setup
 - Create a new project on [Supabase](https://supabase.com).
 - Execute the SQL in `supabase/schema.sql` in the SQL Editor.
-- Update `.env.local` with your credentials.
-
-## 🧪 Demo Mode
-If `NEXT_PUBLIC_SUPABASE_URL` is not provided in `.env.local`, the application will run in **Demo Mode** with a mocked Supabase client, allowing you to explore the UI and ML features instantly.
+- Update `.env.local` with your credentials (refer to `.env.example`).
 
 ---
-Built for the college project fair with ❤️ and FAANG-level polish.
+Built with ❤️ for a safer internet experience.

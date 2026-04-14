@@ -25,11 +25,11 @@ class MockSupabaseClient {
               {
                 id: '1',
                 user_id: 'bot-1',
-                content: 'Welcome to Bloom Chat! Try typing something.',
+                content: 'Welcome to Haven! Try typing something.',
                 is_toxic: false,
                 toxicity_score: 0.01,
                 created_at: new Date().toISOString(),
-                profiles: { username: 'Bloom Bot', avatar_url: '' }
+                profiles: { username: 'Haven Bot', avatar_url: '' }
               }
             ] : [],
             error: null
