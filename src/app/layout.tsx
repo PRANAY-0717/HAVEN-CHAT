@@ -8,8 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bloom Chat | Real-time AI Moderation",
-  description: "A production-grade, visually stunning, real-time chatroom with ML toxicity detection.",
+  title: "Haven | Your Safe Chat Sanctuary",
+  description: "Haven: A place of safety or refuge from the rest of the toxic internet.",
 };
 
 export default function RootLayout({

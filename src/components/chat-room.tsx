@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Send, ShieldAlert, ShieldCheck, Loader2, BarChart3, Brain, Settings2, Zap, Database, MessageSquare } from 'lucide-react';
+import { Send, ShieldAlert, ShieldCheck, Loader2, BarChart3, Brain, Settings2, Zap, Database, MessageSquare, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
 
 interface Profile {
   username: string;
@@ -43,6 +43,7 @@ interface Message {
   toxicity_score: number;
   created_at: string;
   profiles?: Profile;
+  is_saved?: boolean;
 }
 
 interface ChatRoomProps {
@@ -51,6 +52,7 @@ interface ChatRoomProps {
 
 export function ChatRoom({ user }: ChatRoomProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [savedMessages, setSavedMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [toxicityScore, setToxicityScore] = useState(0);
@@ -114,23 +116,68 @@ export function ChatRoom({ user }: ChatRoomProps) {
     ensureProfile();
   }, [user]);
 
+  const fetchSavedMessages = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('saved_messages')
+      .select('message_id, messages(*, profiles(username, avatar_url))')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching saved messages:', error);
+    } else {
+      const formattedSaved = data.map((item: any) => ({
+        ...item.messages,
+        is_saved: true,
+      }));
+      setSavedMessages(formattedSaved);
+      
+      // Update messages list to show saved status
+      setMessages(prev => prev.map(msg => ({
+        ...msg,
+        is_saved: formattedSaved.some((s: Message) => s.id === msg.id)
+      })));
+    }
+  };
+
   useEffect(() => {
     // Fetch initial messages
     const fetchMessages = async () => {
-      const { data, error } = await supabase
+      const { data: msgs, error } = await supabase
         .from('messages')
         .select('*, profiles(username, avatar_url)')
         .order('created_at', { ascending: true })
-        .limit(50);
+        .limit(100);
 
       if (error) {
         toast.error('Failed to fetch messages');
       } else {
-        setMessages(data || []);
+        // After fetching messages, fetch saved state if user is logged in
+        if (user) {
+          const { data: savedData } = await supabase
+            .from('saved_messages')
+            .select('message_id')
+            .eq('user_id', user.id);
+          
+          const savedIds = new Set(savedData?.map((s: { message_id: string }) => s.message_id) || []);
+          const messagesWithSaved = (msgs || []).map((m: Message) => ({
+            ...m,
+            is_saved: savedIds.has(m.id)
+          }));
+          setMessages(messagesWithSaved);
+          fetchSavedMessages();
+        } else {
+          setMessages(msgs || []);
+        }
       }
     };
 
     fetchMessages();
+
+    // Cleanup interval for frontend (though DB handles it, we refresh messages)
+    const cleanupInterval = setInterval(() => {
+      fetchMessages();
+    }, 1000 * 60 * 5); // Refresh every 5 mins to sync with DB cleanup
 
     // Subscribe to real-time changes
     console.log('Setting up real-time subscription...');
@@ -139,60 +186,90 @@ export function ChatRoom({ user }: ChatRoomProps) {
       .on(
         'postgres_changes',
         { 
-          event: 'INSERT', 
+          event: '*', // Listen to ALL events including DELETE
           schema: 'public', 
           table: 'messages' 
         },
-        async (payload: RealtimePostgresInsertPayload<Message>) => {
-          console.log('Real-time message received:', payload.new);
+        async (payload: any) => {
+          console.log('Real-time change received:', payload);
           
-          // Fetch profile for the new message
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('username, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single();
+          if (payload.eventType === 'INSERT') {
+            // Fetch profile for the new message
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', payload.new.user_id)
+              .single();
 
-          if (profileError) {
-            console.error('Error fetching profile for real-time message:', profileError);
+            if (profileError) {
+              console.error('Error fetching profile for real-time message:', profileError);
+            }
+
+            const newMessage = {
+              ...payload.new,
+              profiles: profileData as Profile,
+              is_saved: false,
+            } as Message;
+
+            setMessages((prev) => {
+              const filtered = prev.filter(m => 
+                !(m.id.startsWith('optimistic-') && 
+                  m.content === newMessage.content && 
+                  m.user_id === newMessage.user_id)
+              );
+              if (filtered.some(m => m.id === newMessage.id)) return filtered;
+              return [...filtered, newMessage];
+            });
+            scrollToBottom();
+          } else if (payload.eventType === 'DELETE') {
+            setMessages((prev) => prev.filter(m => m.id !== payload.old.id));
           }
-
-          const newMessage = {
-            ...payload.new,
-            profiles: profileData as Profile,
-          } as Message;
-
-          setMessages((prev) => {
-            // Remove any optimistic message with the same content and user that was just sent
-            const filtered = prev.filter(m => 
-              !(m.id.startsWith('optimistic-') && 
-                m.content === newMessage.content && 
-                m.user_id === newMessage.user_id)
-            );
-            
-            // Check if this message already exists (to be safe)
-            if (filtered.some(m => m.id === newMessage.id)) return filtered;
-            
-            console.log('Adding new message to state:', newMessage);
-            return [...filtered, newMessage];
-          });
-          scrollToBottom();
         }
       )
-      .subscribe((status: string, err?: any) => {
-        console.log('Real-time subscription status:', status);
-        if (err) console.error('Subscription error object:', err);
-        
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Real-time channel error occurred');
-          toast.error('Real-time chat is disconnected. Try reloading.');
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(cleanupInterval);
     };
-  }, []);
+  }, [user]);
+
+  const handleToggleSave = async (message: Message) => {
+    if (!user) return;
+
+    if (message.is_saved) {
+      // Unsave
+      const { error } = await supabase
+        .from('saved_messages')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('message_id', message.id);
+
+      if (error) {
+        toast.error('Failed to unsave message');
+      } else {
+        setMessages(prev => prev.map(m => m.id === message.id ? { ...m, is_saved: false } : m));
+        setSavedMessages(prev => prev.filter(m => m.id !== message.id));
+        toast.success('Message unsaved');
+      }
+    } else {
+      // Save
+      const { error } = await supabase
+        .from('saved_messages')
+        .insert({
+          user_id: user.id,
+          message_id: message.id
+        });
+
+      if (error) {
+        toast.error('Failed to save message');
+      } else {
+        setMessages(prev => prev.map(m => m.id === message.id ? { ...m, is_saved: true } : m));
+        fetchSavedMessages();
+        toast.success('Message saved to your collection');
+      }
+    }
+  };
 
   useEffect(() => {
     // Small delay to ensure the DOM has finished updating
@@ -297,11 +374,11 @@ export function ChatRoom({ user }: ChatRoomProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto p-4 space-y-4">
-      <Card className="flex-1 flex flex-col bg-background/50 backdrop-blur-md border-muted-foreground/20 shadow-xl overflow-hidden min-h-0">
-        <CardHeader className="border-b bg-muted/30 py-4 flex flex-row items-center justify-between shrink-0">
+      <Card className="flex-1 flex flex-col bg-background/30 backdrop-blur-xl border-white/10 shadow-2xl overflow-hidden min-h-0 ring-1 ring-white/10">
+        <CardHeader className="border-b bg-muted/20 py-4 flex flex-row items-center justify-between shrink-0">
           <div>
             <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <span className="text-primary">Bloom</span> Chat
+              <span className="text-primary">Haven</span> Chat
               <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-500 border-green-500/20">
                 Live
               </Badge>
@@ -339,6 +416,60 @@ export function ChatRoom({ user }: ChatRoomProps) {
                   <SheetDescription>Personalized analysis of your communication style.</SheetDescription>
                 </SheetHeader>
                 <AIInsights userMessages={messages.filter((m) => m.user_id === user.id)} />
+              </SheetContent>
+            </Sheet>
+
+            <Sheet>
+              <SheetTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="hover:bg-primary/10">
+                    <Bookmark className="w-5 h-5 text-muted-foreground" />
+                  </Button>
+                }
+              />
+              <SheetContent className="w-full sm:max-w-md flex flex-col">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="text-xl">Saved Messages</SheetTitle>
+                  <SheetDescription>Messages you've saved from the chat. Saved messages are protected from auto-cleanup.</SheetDescription>
+                </SheetHeader>
+                <ScrollArea className="flex-1 -mx-6 px-6">
+                  <div className="space-y-4 pb-4">
+                    {savedMessages.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Bookmark className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                        <p>No saved messages yet</p>
+                      </div>
+                    ) : (
+                      savedMessages.map((msg) => (
+                        <div key={msg.id} className="p-4 rounded-xl bg-muted/30 border border-white/5 space-y-2 relative group">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="w-6 h-6">
+                                <AvatarImage src={msg.profiles?.avatar_url} />
+                                <AvatarFallback className="text-[10px] uppercase bg-primary text-primary-foreground">
+                                  {msg.profiles?.username?.substring(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-semibold">{msg.profiles?.username}</span>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="w-7 h-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleToggleSave(msg)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <p className="text-sm">{msg.content}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(msg.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </SheetContent>
             </Sheet>
 
@@ -401,7 +532,7 @@ export function ChatRoom({ user }: ChatRoomProps) {
           <div className="flex flex-col space-y-6 min-h-full">
             <div className="flex flex-col items-center justify-center py-8 opacity-40">
               <div className="p-3 rounded-full bg-primary/10 mb-2">
-                <MessageSquare className="w-6 h-6 text-primary" />
+                <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
               <p className="text-xs font-medium uppercase tracking-widest">End-to-End Encrypted</p>
             </div>
@@ -441,8 +572,17 @@ export function ChatRoom({ user }: ChatRoomProps) {
                       >
                         {msg.content}
                         {!msg.is_toxic && (
-                          <div className={`absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground whitespace-nowrap ${msg.user_id === user.id ? 'right-0' : 'left-0'}`}>
-                            {msg.id.startsWith('optimistic-') ? 'Sending...' : 'Delivered'}
+                          <div className={`absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-muted-foreground flex items-center gap-2 whitespace-nowrap ${msg.user_id === user.id ? 'right-0' : 'left-0'}`}>
+                            <span>{msg.id.startsWith('optimistic-') ? 'Sending...' : 'Delivered'}</span>
+                            {!msg.id.startsWith('optimistic-') && (
+                              <button 
+                                onClick={() => handleToggleSave(msg)}
+                                className={`flex items-center gap-1 hover:text-primary transition-colors ${msg.is_saved ? 'text-primary' : ''}`}
+                              >
+                                {msg.is_saved ? <BookmarkCheck className="w-3 h-3" /> : <Bookmark className="w-3 h-3" />}
+                                {msg.is_saved ? 'Saved' : 'Save'}
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

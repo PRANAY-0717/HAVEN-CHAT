@@ -6,8 +6,10 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 from typing import Optional
+import uvicorn
+import os
 
-app = FastAPI(title="Toxicity Detection API")
+app = FastAPI(title="Haven Toxicity Detection API")
 
 # Enable CORS
 app.add_middleware(
@@ -21,8 +23,16 @@ app.add_middleware(
 # Gemini Setup
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        print("Gemini model configured successfully.")
+    except Exception as e:
+        print(f"Error configuring Gemini: {e}")
+        gemini_model = None
+else:
+    print("GEMINI_API_KEY not found. High accuracy mode will be unavailable.")
+    gemini_model = None
 
 # Load local model and vectorizer
 MODEL_PATH = 'models/model.pkl'

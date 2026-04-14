@@ -52,9 +52,9 @@ export function AuthForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{isSignUp ? 'Create Account' : 'Welcome Back'}</CardTitle>
-        <CardDescription>
-          {isSignUp ? 'Join Bloom Chat today' : 'Sign in to your account'}
+        <CardTitle className="text-2xl font-bold text-center">{isSignUp ? 'Create Account' : 'Welcome to Haven'}</CardTitle>
+        <CardDescription className="text-center">
+          {isSignUp ? 'Join Haven today' : 'Your safe space for real-time conversation.'}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleAuth}>
