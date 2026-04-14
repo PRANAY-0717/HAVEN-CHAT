@@ -95,7 +95,10 @@ raw_data = [
     ('Bitch please.', 1), ('You are a total asshole.', 1), ('What a dumbass.', 1),
     ('Stop being such a prick.', 1), ('You are a coward and a liar.', 1),
     ('Don\'t be such a jerk.', 1), ('You are acting like a fool.', 1),
-    ('Piece of sh*t.', 1), ('Motherf***er.', 1), ('You are trash.', 1)
+    ('Piece of sh*t.', 1), ('Motherf***er.', 1), ('You are trash.', 1),
+    # Additional explicit profanities to ensure model catches them
+    ('shit', 1), ('you are shit', 1), ('shit hehe', 1), ('shiuty', 1),
+    ('fuck', 1), ('bitch', 1), ('asshole', 1), ('crap', 1), ('bullshit', 1)
 ]
 
 df = pd.DataFrame(raw_data, columns=['text', 'is_toxic'])
