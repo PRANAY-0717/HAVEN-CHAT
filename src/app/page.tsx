@@ -104,8 +104,8 @@ export default function Home() {
                 Haven: A place of safety or refuge from the rest of the toxic internet.
               </p>
               
-              <div className="relative pt-8">
-                <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full" />
+              <div className="relative pt-8 z-10">
+                <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full -z-10 pointer-events-none" />
                 <AuthForm />
               </div>
             </div>
