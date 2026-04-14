@@ -55,6 +55,13 @@ raw_data = [
     ('How many people are coming?', 0),
     ('People usually like that.', 0),
     ('He is a good person.', 0),
+    ('kill the process', 0), 
+    ('crash the server', 0),
+    ('execute the program', 0),
+    ('dump the memory', 0),
+    ('headshot', 0),
+    ('gg wp', 0),
+    ('destroy the base', 0),
 
     # --- TOXIC / HARMFUL (Label 1) ---
     ('I hate you so much, you are terrible.', 1),
@@ -118,7 +125,7 @@ def train_model():
     tfidf = TfidfVectorizer(
         stop_words='english', 
         lowercase=True, 
-        ngram_range=(1, 3), 
+        ngram_range=(1, 4), 
         analyzer='word',
         max_features=5000
     )

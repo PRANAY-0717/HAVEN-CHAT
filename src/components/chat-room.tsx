@@ -65,10 +65,11 @@ export function ChatRoom({ user }: ChatRoomProps) {
       if (debouncedMessage.trim().length > 3) {
         try {
           const mlApiUrl = process.env.NEXT_PUBLIC_ML_API_URL || 'http://localhost:8000';
+          const recentHistory = messages.slice(-5).map(m => `${m.profiles?.username || 'Anonymous'}: ${m.content}`);
           const res = await fetch(`${mlApiUrl}/predict`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: debouncedMessage, mode: moderationMode }),
+            body: JSON.stringify({ text: debouncedMessage, mode: moderationMode, history: recentHistory }),
           });
           if (res.ok) {
             const { toxicity_score } = await res.json();
@@ -294,11 +295,13 @@ export function ChatRoom({ user }: ChatRoomProps) {
 
     try {
       const mlApiUrl = process.env.NEXT_PUBLIC_ML_API_URL || 'http://localhost:8000';
+      const recentHistory = messages.slice(-5).map(m => `${m.profiles?.username || 'Anonymous'}: ${m.content}`);
+      
       // 1. Toxicity Check (Intercept)
       const res = await fetch(`${mlApiUrl}/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: newMessage, mode: moderationMode }),
+        body: JSON.stringify({ text: newMessage, mode: moderationMode, history: recentHistory }),
       });
 
       if (!res.ok) throw new Error('Failed to check toxicity');
