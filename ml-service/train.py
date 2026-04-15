@@ -8,6 +8,7 @@ import os
 # Refined dataset with insights from research on subtle toxicity and common chat patterns
 raw_data = [
     # --- NON-TOXIC: Standard Positive/Neutral (Label 0) ---
+    ('hi',0),
     ('I love this project, it is amazing!', 0),
     ('You are a great person.', 0),
     ('Have a nice day!', 0),
