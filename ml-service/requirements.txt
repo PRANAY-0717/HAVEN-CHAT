@@ -6,4 +6,4 @@ pydantic
 numpy
 google-generativeai
 python-multipart
-datasets==3.3.2
+datasets
