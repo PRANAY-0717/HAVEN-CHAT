@@ -86,15 +86,6 @@ Your primary goal:
    - Only flag if REAL psychological, emotional, or physical harm is likely  
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-🌍 MULTILINGUAL INTELLIGENCE
-━━━━━━━━━━━━━━━━━━━━━━━
-- Detect message language
-- If NOT English:
-  → Translate internally
-  → Analyze semantic meaning (not literal translation)
-- Understand slang, Hinglish, abbreviations, and cultural tone
-
-━━━━━━━━━━━━━━━━━━━━━━━
 🧩 CONTEXT ANALYSIS
 ━━━━━━━━━━━━━━━━━━━━━━━
 Previous Chat Context:
