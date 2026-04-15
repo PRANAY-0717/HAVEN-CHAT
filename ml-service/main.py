@@ -88,6 +88,7 @@ async def get_gemini_prediction(text: str, history: list[str] = []):
     - Be conservative with false positives.
     - If the intent is clearly positive or neutral slang, set is_toxic to false.
     - Return ONLY a JSON object.
+    -If there is a different language used try to translate it and then mark it as toxic or not , it shall not be done directly
 
     Message to analyze: "{text}"
     """

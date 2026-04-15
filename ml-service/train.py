@@ -114,7 +114,7 @@ raw_data = [
     ('fuck', 1), ('bitch', 1), ('asshole', 1), ('crap', 1), ('bullshit', 1),
     ('fuck off', 1),
 
-    # Multilingual / Hinglish Profanities
+    # Multilingual / Hinglish Profanitiesff
     ('chutiya', 1), ('tu pagal', 1), ('paggal', 1), ('madarchod', 1), ('bhosdike', 1),
     ('gandu', 1), ('bhenchod', 1), ('kaminey', 1), ('saale', 1),
     
